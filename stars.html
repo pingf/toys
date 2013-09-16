@@ -1,0 +1,63 @@
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+  <title>stars</title>
+    <script type="text/javascript" src="./lib/syntaxhighlighter_3.0.83/scripts/shCore.js"></script>
+    <script type="text/javascript" src="./lib/syntaxhighlighter_3.0.83/scripts/shBrushPython.js"></script>
+    <link type="text/css" rel="stylesheet" href="./lib/syntaxhighlighter_3.0.83/styles/shCoreDefault.css"/>
+    <script type="text/javascript">SyntaxHighlighter.all();</script>
+</head>
+<body id="stars" onload="">
+  <h2>Python中*号的作用</h2>
+  <p>在函数定义时,*号作收集用,其接受多个参数,并转换为list(一个*)或dict(两个*)</p>
+  <p>在传入参数时,*作拆分(反转)用,其接受一个list(一个*)或一个dict(两个*),并将其拆分</p>
+  <pre class="brush: python;">
+      #coding=utf-8
+    '''
+    Created on 2011-10-9
+    
+    @author: Jesse Meng [pingf0@gmail.com]
+    '''
+    #收集
+    def print_list(*params):
+        print params
+    def print_dict(**params):
+        print params
+    def print_dict2(**params):
+        print params['name'],params['age']
+    #翻转
+    def show_list(name,age):
+        print name,age
+    def show_dict(name,age):
+        print name,age
+        
+    
+    if __name__ == '__main__':
+        print_list('Jesse',25)
+        print_dict(name='Jesse',age=25)
+        print_dict(age=25,name='Jesse',a0='first')
+        print_dict2(age=25,name='Jesse')
+        
+        print '*'*25
+        l=['Jesse',25]
+        d={'name':'Jesse','age':25}
+        show_list(*l)
+        show_dict(**d)
+  </pre>   
+  <p>正确的输出是</p>
+  <pre class="brush: python;">
+    ('Jesse', 25)
+    {'age': 25, 'name': 'Jesse'}
+    {'a0': 'first', 'age': 25, 'name': 'Jesse'}
+    Jesse 25
+    *************************
+    Jesse 25
+    Jesse 25
+  </pre> 
+  <p>值得注意的是那个传入的链表是排序的</p>
+  <h3>参考文章</h3>
+    <ul>
+        <li><i>Python基础教程 第二版</i></li>
+        <li><i>Learning Python 第三版</i></li>
+        <li></li>
+    </ul>
+</body>
