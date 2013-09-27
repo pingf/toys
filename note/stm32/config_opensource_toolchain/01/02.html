@@ -1,0 +1,212 @@
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+  <title>01</title>
+  
+  <script type="text/javascript" src="../../../../lib/jquery.js/jquery-2.0.3.min.js"></script>
+  <script type="text/javascript" src="../../../../lib/snippet.js/jquery.snippet.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="../../../../lib/snippet.js/jquery.snippet.min.css" /> 
+  <script type="text/javascript">
+   $(document).ready(function(){ 
+    $("pre.cpp").snippet("cpp",{style:"greenlcd"}); 
+   });
+  </script>
+</head>
+
+<body id="01" onload="">
+	
+
+<h1>用Eclipse来开发STM32F4Discovery</h1>
+<hr />
+  <p>版权声明:</p>
+  <p>作者:Jesse MENG →_→ 爱科学爱和平的大M君</p> 
+  <p>邮箱:<a href="mailto:pingf0@gmail.com?subject=feedback on codeBenchDemo">pingf0@gmail.com</a></p>
+  
+  <p>
+ <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="知识共享许可协议" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />本<span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" rel="dct:type">作品</span>采用<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">知识共享署名-相同方式共享 3.0 Unported许可协议</a>进行许可。
+ </p>
+ <hr />
+ <pre class="cpp animated bounceInDown">
+def main:
+    print 'hello world' 
+</pre>
+<pre class="cpp animated bounceInDown">
+#include &lt;stdio.h&gt;
+int main(){
+    printf("hello world\n");
+    return 0;
+} 
+</pre> 
+ <pre class="cpp ">
+#include "stm32f4xx_conf.h"
+void delay(unsigned int cnt)
+{
+    while(cnt--) ;
+}
+int main()
+{
+	  GPIO_InitTypeDef  GPIO_InitStructure; 
+	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE); 
+	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	  GPIO_Init(GPIOD, &GPIO_InitStructure); 
+	  while (1)
+	  { 
+	    GPIOD->BSRRL = GPIO_Pin_12 | GPIO_Pin_13;
+	    delay(5000); 
+	    GPIOD->BSRRH = GPIO_Pin_12 | GPIO_Pin_13;
+	    delay(5000); 
+	  }
+  return 0;
+}
+</pre>
+
+<pre class="cpp ">
+/* Entry Point */
+ENTRY(Reset_Handler)
+
+/* Highest address of the user mode stack */
+_estack = 0x20020000;    /* end of 128K RAM on AHB bus*/
+
+/* Generate a link error if heap and stack don't fit into RAM */
+_Min_Heap_Size = 0;      /* required amount of heap  */
+_Min_Stack_Size = 0x400; /* required amount of stack */
+
+/* Specify the memory areas */
+MEMORY
+{
+  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1M
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
+  CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 64K
+  MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
+}
+
+/* Define output sections */
+SECTIONS
+{
+  /* The startup code goes first into FLASH */
+  .isr_vector :
+  {
+    . = ALIGN(4);
+    KEEP(*(.isr_vector)) /* Startup code */
+    . = ALIGN(4);
+  } >FLASH
+
+  /* The program code and other data goes into FLASH */
+  .text :
+  {
+    . = ALIGN(4);
+    *(.text)           /* .text sections (code) */
+    *(.text*)          /* .text* sections (code) */
+    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    *(.glue_7)         /* glue arm to thumb code */
+    *(.glue_7t)        /* glue thumb to arm code */
+	*(.eh_frame)
+
+    KEEP (*(.init))
+    KEEP (*(.fini))
+
+    . = ALIGN(4);
+    _etext = .;        /* define a global symbols at end of code */
+  } >FLASH
+
+
+   .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+    .ARM : {
+    __exidx_start = .;
+      *(.ARM.exidx*)
+      __exidx_end = .;
+    } >FLASH
+
+  .preinit_array     :
+  {
+    PROVIDE_HIDDEN (__preinit_array_start = .);
+    KEEP (*(.preinit_array*))
+    PROVIDE_HIDDEN (__preinit_array_end = .);
+  } >FLASH
+  .init_array :
+  {
+    PROVIDE_HIDDEN (__init_array_start = .);
+    KEEP (*(SORT(.init_array.*)))
+    KEEP (*(.init_array*))
+    PROVIDE_HIDDEN (__init_array_end = .);
+  } >FLASH
+  .fini_array :
+  {
+    PROVIDE_HIDDEN (__fini_array_start = .);
+    KEEP (*(.fini_array*))
+    KEEP (*(SORT(.fini_array.*)))
+    PROVIDE_HIDDEN (__fini_array_end = .);
+  } >FLASH
+
+  /* used by the startup to initialize data */
+  _sidata = .;
+
+  /* Initialized data sections goes into RAM, load LMA copy after code */
+  .data : AT ( _sidata )
+  {
+    . = ALIGN(4);
+    _sdata = .;        /* create a global symbol at data start */
+    *(.data)           /* .data sections */
+    *(.data*)          /* .data* sections */
+
+    . = ALIGN(4);
+    _edata = .;        /* define a global symbol at data end */
+  } >RAM
+
+  /* Uninitialized data section */
+  . = ALIGN(4);
+  .bss :
+  {
+    /* This is used by the startup in order to initialize the .bss secion */
+    _sbss = .;         /* define a global symbol at bss start */
+    __bss_start__ = _sbss;
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
+
+    . = ALIGN(4);
+    _ebss = .;         /* define a global symbol at bss end */
+    __bss_end__ = _ebss;
+  } >RAM
+
+  /* User_heap_stack section, used to check that there is enough RAM left */
+  ._user_heap_stack :
+  {
+    . = ALIGN(4);
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+    . = ALIGN(4);
+  } >RAM
+
+  /* MEMORY_bank1 section, code must be located here explicitly            */
+  /* Example: extern int foo(void) __attribute__ ((section (".mb1text"))); */
+  .memory_b1_text :
+  {
+    *(.mb1text)        /* .mb1text sections (code) */
+    *(.mb1text*)       /* .mb1text* sections (code)  */
+    *(.mb1rodata)      /* read-only data (constants) */
+    *(.mb1rodata*)
+  } >MEMORY_B1
+
+  /* Remove information from the standard libraries */
+  /DISCARD/ :
+  {
+    libc.a ( * )
+    libm.a ( * )
+    libgcc.a ( * )
+  }
+
+  .ARM.attributes 0 : { *(.ARM.attributes) }
+}
+</pre>
+<p>这个配置会把程序下载到flash中,如果有需要可以修改成下载到ram中,延长使用寿命</p>
+<hr />
+<p>然后点击Build编译就好了</p>
+
+ </body>
