@@ -154,6 +154,34 @@ disconnect
 quit
 </code></pre>
 <hr style="clear: left" />
-<h3>下载</h3>
-<img src="download.png" style="float: left">
+<h3>调试</h3>
+<img src="debug01.png" style="float: left">
+<p>下载时使用的是gdb,调试也是使用gdb;但下载时是从external tools那块来调用gdb,调试时则用debug configuration选单</p>
+<hr />
+<p>在main选项卡中设置待调试的elf文件以及相关的工程</p>
+<hr style='clear: left'/>
+<img src="debug02.png" style="float: left">
+<p>在debugger选项卡中设置gdb文件的位置和配置文件</p>
+<hr />
+<p>另外要设置通讯协议为mi,如果这个界面不是这样的,那么点击最后的launcher进行选择</p>
+<hr style='clear: left'/>
+<p>用于调试的配置文件如下</p>
+<pre><code class="tcl" >
+target remote localhost:3333  
+monitor reset 
+monitor halt
+load Debug/STM32F4Discovery.elf
+disconnect
+target remote localhost:3333
+#monitor reset
+#monitor halt
+mon reset init
+#thb main
+</code></pre>
+<hr />
+<img src="debug03.png" style="float: left">
+<p>选择标准的即可</p> 
+<hr style='clear: left'/>
+<br />
+<p>然后点击调试就可进行调试~\(≧▽≦)/~啦啦啦</p>
  </body>
