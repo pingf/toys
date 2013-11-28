@@ -1,0 +1,177 @@
+<head>
+  <link rel="stylesheet" title="School Book" href="../../../../lib/highlight.js-line-numbers/styles/default.css"> 
+  <link rel="stylesheet" title="School Book" href="../../../../lib/highlight.js-line-numbers/styles/tomorrow-night-bright.css"> 
+    
+  <script src="../../../../lib/highlight.js-line-numbers/highlight.pack.js"></script>
+  <script> 
+  hljs.tabReplace = '    ';
+  hljs.lineNodes = true;
+  hljs.initHighlightingOnLoad();
+  </script> 
+</head>
+<body>
+<h1>Python中的super</h1>
+<hr />
+<p>版权声明:</p>
+<p>作者:Jesse MENG →_→ 爱科学爱和平的大M君</p> 
+<p>邮箱:<a href="mailto:pingf0@gmail.com?subject=feedback on codeBenchDemo">pingf0@gmail.com</a></p>
+  
+<p>
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="知识共享许可协议" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />本<span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" rel="dct:type">作品</span>采用<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">知识共享署名-相同方式共享 3.0 Unported许可协议</a>进行许可。
+</p>
+ <hr /> 
+
+
+
+<hr />
+<p>和java中的类似，super表示的是父类，但是python这货是支持多重继承的，所以super就复杂很多，再加上历史的原因，早期木有super一说，并且有两种类，所以随着历史的推进这个坑越挖越深啊啊啊啊。。。</p>
+<br />
+<p>在python 2.x中可以这么定义类</p>
+<pre><code class="python" >
+class A:
+    def __init__(self):
+        pass
+class B(A):
+    def __init__(self):
+        A.__init__(self)
+if __name__=='__main__': 
+    b=B()
+</code></pre>	
+<p>而“菱形”继承则变成了如下的样纸</p>
+<pre><code class="python" >
+class A:
+    def __init__(self):
+        pass
+class B(A):
+    def __init__(self):
+        A.__init__(self)
+class C(A):
+    def __init__(self):
+        A.__init__(self)
+class D(B,C):
+    def __init__(self):
+        B.__init__(self)
+        C.__init__(self)
+if __name__=='__main__': 
+    d=D()
+</code></pre>	
+<p>但是上面的代码则会导致A的构造函数被调用了两次,这是我们不希望看到的，在python 2.3(应该是这个，窝也木有记清楚)之后，引入了新式类以及super来解决这一问题。</p>
+<p>在新式类中，所有类都要从object来派生，这样的类就可以使用super来完成父类的构造</p>
+<pre><code class="python" >
+class A(object):
+    def __init__(self):
+        pass
+class B(A):
+    def __init__(self):
+        super(B,self).__init__()
+class C(A):
+    def __init__(self):
+        super(C,self).__init__()
+class D(B,C):
+    def __init__(self):
+        super(D,self).__init__()
+if __name__=='__main__': 
+    d=D()
+</code></pre>	
+<p>但是这种高端大气上档次的功能却使得原本整洁的python变得杂乱不堪，使用者要想证明白这块要知道一堆诸如菱形继承，协作继承，新式类等，MRO等概念</p>
+<p>更扯的是，到了python3,super的参数被简化了，但是为毛不把其它的self定义都给简化掉呢，既然这块为了简便都木有遵循显示原则，其它的self定义也给省了呗？</p>
+<p>python 3中如下</p>
+<pre><code class="python" >
+class A(object):
+    def __init__(self):
+        pass
+class B(A):
+    def __init__(self):
+        super().__init__()
+class C(A):
+    def __init__(self):
+        super().__init__()
+class D(B,C):
+    def __init__(self):
+        super(self).__init__()
+if __name__=='__main__': 
+    d=D()
+</code></pre>	
+<hr />
+<p>对于刚入门py的童鞋来说，你可以想当然的认为super会正确的调用父类的函数，但是当你写的多了，就会发现这种想法图样图森破了啊。。。这是个如同C语言中野指针存在的坑。。。</p>
+<p>比如下面的源于stackoverflow的例子</p>
+<pre><code class="python" >
+class A(object):
+    def __init__(self):
+        print "entering A"
+        print "leaving A"
+
+class B(object):
+    def __init__(self):
+        print "entering B"
+        super(B, self).__init__()
+        print "leaving B"
+
+class C(A,B):
+    def __init__(self):
+        print "entering C"
+        super(C, self).__init__()
+        print "leaving C"
+C()	
+</code></pre>	
+<p>其输出如下</p>
+<pre><code class="text" >
+entering C
+entering A
+leaving A
+leaving C
+</code></pre>	
+<p>嗯，并木有调用B的构造函数，原因很简单，想必你已经看到了，就是在A的构造函数中木有使用super，而变得不够“协作”了</p>
+<p>这里要知道一个概念MRO，就是method resolution order，大白话就是用来描述方法构造的顺序的</p>
+<p>关于MRO的顺序这里暂且不表，如果想知道当然还是看官方的文档<a href="http://www.python.org/download/releases/2.3/mro/">点我点我点我</a>，这里可以用C.mro()方法来获取,在我的机器上是C，A，B，object</p>
+<p>在知道了正确的MRO后，super方法就比较好解释了，首先，要知道的是它只调用一个方法，就是当前类其后的一个类的方法</p>
+<p>比如上面的代码先是C的构造函数，其中调用了super(C, self).__init__()，super中的类是C，在MRO列表中C后面是A，所以就调用了A的__init()__方法，但是A中木有继续使用super，所以就返回了</p>
+<p>实际上，上面的调用object的__init__方法也木有调用的，如果想把B的构造也准确的调用，A的构造函数中要明确的使用super</p>
+<hr />
+<p>super和父类名直接调用__init__混用(新旧类的混用)也是危险的,比如下面的代码</p>
+<pre><code class="python" >
+class Base(object):
+    def __init__(self):
+        print "Base created"
+
+class ChildA(Base):
+    def __init__(self):
+        Base.__init__(self)
+
+class ChildB(Base):
+    def __init__(self):
+        super(ChildB, self).__init__()
+
+Base = ChildB
+Base()
+# Base = ChildA
+# Base()
+</code></pre>
+<p>第一个Base()可以被调用,但是调用的实质ChildB的构造,当然在构造ChildB的同时Base的构造会被调用</p>
+<p>但是注释中的就不这么幸运了,因为Base被替换成了ChildA,在调用ChildA的构造时,调用的Base.__init__(self)其实也被替换成了ChildA.__init__(self),所以就无穷的递归下去了</p>
+<hr />
+<p>还有一些想写的比如在有__init__函数和木有的时候是有些不同的,另外新式类和旧式类的调用顺序也是不同的.还有用super肿么传多个参数之类的以后再总结吧.</p>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<p>P.S.</p>
+<p>本文以上的代码大部分源自stackoverflow以及自己的修改(可能修改度为0),如有侵权,欢迎给我律师函~^^</p>
+<p>本文的总结内容,遵循GFDL协议,你若侵权,嗯,最后了来句狠的吧......生娃不具备OOXX功能!!!</p>
+</body>
