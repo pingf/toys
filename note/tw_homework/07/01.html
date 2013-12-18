@@ -1,0 +1,367 @@
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+  <title>01</title>
+    
+  <link rel="stylesheet" title="School Book" href="../../../lib/highlight.js-line-numbers/styles/default.css"> 
+  <link rel="stylesheet" href="../../../lib/impress.js/css/impress-demo.css"> 
+
+  <script src="../../../lib/highlight.js-line-numbers/highlight.pack.js"></script>
+  
+  <script> 
+  hljs.tabReplace = '    ';
+  hljs.lineNodes = true;
+  hljs.initHighlightingOnLoad(); 
+  </script> 
+</head>
+
+<body id="02" onload="">
+ 
+<div class="impress-not-supported">
+            <div class="fallback-message">
+                <p>你的浏览器<b>不支持</b> impress.js, 所以当前展示的是简化版。</p>
+                <p>为了获得更好的体验，请使用最新的 <b>Chrome</b>, <b>Safari</b> 或者 <b>Firefox</b> 浏览器。</p>
+            </div>
+        </div>
+<div id="impress">
+<div class="step"  data-scale="0.5">在此之前</div>
+<div class="step" data-x="1500" data-y="0" >
+你要知道的是python是个啥?
+</div>
+<div class="step" data-x="1500" data-y="500" >
+<p>其实就是个编程语言啦~</p>
+</div>
+
+<div class="step" data-x="1500" data-y="1000" >
+<p>但是她很优雅~</p>
+</div>
+
+<div class="step" data-x="1500" data-y="1500" >
+<p>和她在一起很快乐~</p>
+</div>
+
+<div class="step" data-x="1500" data-y="2000" >
+<p>同时你不用为她操心太多~</p>
+</div>
+
+ 
+
+<div class="step" data-x="3000" data-y="0">
+<p>如果....那么....还是循环一次吧....</p>  
+</div>
+
+<div class="step" data-x="3000" data-y="1000">
+<pre><code class="python" >
+if a>90:
+	print('excellent')
+elif a>60:
+	print('good')
+else:
+	print('failed')
+</code></pre>
+</div>
+
+<div class="step" data-x="3000" data-y="2000">
+<pre><code class="python" >
+x = [1,2,3,4]
+for i in range(4):
+	x[i]=x[i]*2
+	
+x=[i*2 for i in x]
+</code></pre>
+</div>
+
+
+<div class="step" data-x="4500" data-y="0">
+<p>函数和类</p>  
+</div>
+
+<div class="step" data-x="4500" data-y="1000">
+<pre><code class="python" >
+def add(x,y):
+	return x+y
+
+add(3,5)	
+	
+sum=lambda x,y:x+y
+
+sum(3,5)
+</code></pre>
+</div>
+
+<div class="step" data-x="4500" data-y="2000">
+<pre><code class="python" >
+class Num:
+	def __init__(self,num):
+		self.num=num
+	def add(self,a):
+		self.num=self.num+a
+		return self
+	
+sum=Num(5).add(3)
+print(sum.num)
+</code></pre>
+</div>
+
+<div class="step" data-x="4500" data-y="3000">
+<pre><code class="python" >
+class A:
+	def __init__(self):
+		pass 
+class B(A):
+	def __init__(self):
+		A.__init__(self)			
+</code></pre>
+</div>
+ 
+
+
+<div class="step" data-x="500" data-y="-400">
+    面向对象
+</div>
+<div class="step" data-x="500" data-y="-800" data-scale="0.5">
+    "函数式"
+</div>
+<div class="step" data-x="0" data-y="-800" data-rotate="90">
+    动态强类型
+</div>
+<div class="step" data-x="-1200" data-y="0" data-rotate-x="30" data-rotate-y="-30" data-rotate-z="90" data-scale="4">
+    自备"能量块"
+</div> 
+
+<div class="step" data-x="-1500" data-y="0" >
+<p>在了解了这么多之后,让我们快快开始论坛的开发吧ლ(╹◡╹ლ)~ </p>
+</div>
+
+
+<div class="step" data-x="-1500" data-y="500" >
+<p>哦,不对,是....山寨....</p>这需要你已经了解JAVA版的ZDYX_BBS的设计和实现,囧rz....</p>
+</div>
+
+<div class="step" data-x="-500" data-y="500" >
+<ul>
+	<li>Spring</li>
+	<li>MyBatis</li>
+	<li>Mockito</li>
+	<li>Junit</li>
+	<li>Gradle</li>
+	<li>jQuery</li>
+	<li>Bootstrap</li>
+</ul>
+</div>
+
+<div class="step" data-x="-3000" data-y="0" >
+<p>我希望具备基本的看贴发帖回帖的功能</p> 
+<p>同时希望能让代码嗖的一下瘦下来</p>
+<p>嗯,总共不要超过500行吧,多了脑子就转不过来了</p> 
+<p>但是,谁都知道减肥是件痛苦的事情....</p>
+</div>
+
+<div class="step" data-x="-3000" data-y="500" >
+<p>TDD就先不要了吧....(我才不会告诉你们python和mock相关的类库我还木有用过的事实T^T....</p>
+<br />
+<p>面向对象和分层适度好了,层分多了额外的代码难免要引入...</p>
+<br />
+<p>嗯,用一个简单好用的框架....Tornado</p>
+</div>
+
+<div class="step" data-x="-4500" data-y="0" >
+<p>要直接演示代码了呦~^^</p>
+<br />
+<p>时间有限,就主要说home页面的实现了,嗯,这是个显示帖子名称列表的页面.</p>
+</div>
+
+<div class="step" data-x="-4500" data-y="500" >
+<pre style='width:1000px;font-size:20px;'>
+<code class="java" >
+@Controller
+@RequestMapping("/")
+public class HomeController {
+    PostService postService = new PostServiceImpl(MyBatisUtil.getSqlSessionFactory());
+    @RequestMapping(method = RequestMethod.GET)
+    public String get(Model model, Principal principal) {
+        if (null == principal) { 
+        	return "login";
+        } 
+        model.addAttribute("posts", postService.findAllPost());
+        return "home"; 
+    }
+}		
+</code>
+</pre>
+</div>
+<div class="step" data-x="-4500" data-y="1000" >
+<pre style='width:1000px;font-size:20px;'>
+<code class="java" >
+@Select(
+    "SELECT id as postId,parent_id as parentId,author_name as authorName,"+
+    "title, content,create_time as createTime,"+
+    "modify_time as modifyTime,creator_id as creatorId,modifier_id as modifierId "+
+    "FROM post " +
+    "WHERE parent_id = 0 " +
+    "ORDER BY create_time desc"
+)
+List<Post> findAllPost();
+</code>
+</pre>
+</div>
+<div class="step" data-x="-4500" data-y="2000" >
+<pre style='width:1000px;font-size:16px;'>
+<code class="html" >
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;c:set var="pageTitle" scope="request" value="Home"/&gt;
+
+&lt;%@ include file="header.jsp" %&gt;
+
+&lt;table class="table table-striped"&gt;
+    &lt;thead&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Title&lt;/th&gt;
+        &lt;th&gt;Author&lt;/th&gt;
+        &lt;th&gt;Publish Time&lt;/th&gt;
+        &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+    &lt;c:forEach var="post" items="${posts}" varStatus="row"&gt;
+        &lt;tr&gt;
+            &lt;td&gt;
+                &lt;a href="&lt;c:url value='/posts/${post.postId}' /&gt;"&gt;
+                    &lt;c:out value="${post.title}"/&gt;
+                &lt;/a&gt;
+            &lt;/td&gt;
+            &lt;td&gt;&lt;c:out value="${post.authorName}"/&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;c:out value="${post.createTime}"/&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/c:forEach&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;%@ include file="footer.jsp" %&gt;
+</code>
+</pre>
+</div>
+<div class="step" data-x="-6000" data-y="0" >
+<p>再来看看Python版的移植</p>
+<p>这里把顺序倒过来,先看html的view,再看python的controller</p>
+</div>
+<div class="step" data-x="-6000" data-y="500" >
+<pre style='width:1000px;font-size:16px;'>
+<code class="html" >
+{% extends "main.html" %}
+
+{% block content %}
+&lt;table class="table table-striped"&gt;
+    &lt;thead&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Title&lt;/th&gt;
+        &lt;th&gt;Author&lt;/th&gt;
+        &lt;th&gt;Publish Time&lt;/th&gt; 
+    &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+    {% for post in posts %}  
+    	&lt;tr&gt;
+            &lt;td&gt;
+            	&lt;a href="/posts/{{post.id}}"&gt; 
+            	{{ post.title }}
+            	&lt;/a&gt; 
+            &lt;/td&gt;
+            &lt;td&gt;{{ post.author_name }} &lt;/td&gt;
+            &lt;td&gt;{{ post.create_time }} &lt;/td&gt;
+        &lt;/tr&gt;
+	{% end %} 
+    &lt;/tbody&gt;
+&lt;/table&gt;
+{% end %}
+</code>
+</pre>
+</div>
+<div class="step" data-x="-6000" data-y="1000" >
+<pre style='width:1000px;font-size:20px;'>
+<code class="python" >
+class HomeHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        if not self.get_current_user(): 
+            self.redirect("/login")
+            return
+        posts = self.db.query("SELECT * FROM post WHERE parent_id=0 ORDER BY create_time DESC") 
+        self.render("home.html", posts=posts, headtype="auth")
+</code>
+</pre>
+</div>
+
+<div class="step" data-x="-7500" data-y="0" >
+<p>数据库的配置和页面的跳转配置tornado是集中放在一起的</p> 
+</div>
+
+<div class="step" data-x="-7500" data-y="500" >
+<pre style='width:1000px;font-size:20px;'>
+<code class="python" >
+ class BBS(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+	        (r"/", LoginHandler),
+	        (r"/home",HomeHandler),
+	        (r"/login",LoginHandler), 
+	        (r"/logout",LogoutHandler),
+	        (r"/user/register",RegisterHandler),
+	        (r"/posts/create",PostCreateHandler),
+	        (r"/posts/(\d+)",PostDetailHandler)
+        ]
+        ....
+</code>
+</pre>
+</div>
+<div class="step" data-x="-7500" data-y="1000" >
+<pre style='width:1000px;font-size:20px;'>
+<code class="python" >
+ class BBS(tornado.web.Application):
+    def __init__(self): 
+        ....
+        self.db = torndb.Connection(
+        	host="127.0.0.1:3306", 
+        	database="bbs",
+        	user="root", 
+        	password="")
+</code>
+</pre>
+</div>
+
+<div class="step" data-x="0" data-y="-2000" >
+<p>总结一下,达到预期了么</p> 
+</div>
+<div class="step" data-x="0" data-y="-2500" >
+<p>实现了用户注册,登录与登出</p>
+<br /> 
+<p>实现了帖子的浏览</p>
+<br /> 
+<p>实现了发帖与回帖</p> 
+</div>
+<div class="step" data-x="0" data-y="-3500" >
+<p>python代码100行</p>
+<br /> 
+<p>html代码200行</p>
+<br /> 
+<p>sql代码100行</p> 
+</div>
+<div class="step" data-x="0" data-y="-4500" >
+<p>都说脚本性能差,写完木事儿测试一下性能吧(使用login)</p>
+<p>siege -c 100 -t 20s 用户页面</p>
+<p>java spring jetty性能: 每秒处理1400~1600请求</p>
+<p>python tornado 性能: 每秒处理900+请求</p>
+<p>python tornado 双进程 性能: 每秒处理1400+请求</p>
+</div>
+<div class="step" data-x="0" data-y="-5500" >
+<p>ZDYX_BBS_PYTHON_HACK_VERSION</p>
+<a href="https://github.com/pingf/ZDYX_BBS_PYTHON_HACK">https://github.com/pingf/ZDYX_BBS_PYTHON_HACK</a>
+</div>
+
+
+<div id="overview" class="step" data-x="-200" data-y="-500" data-scale="3"></div>
+</div> 
+<script src="../../../lib/impress.js/js/impress.js"></script> 
+<script>impress().init();</script>
+ 
+ 
+ </body>
