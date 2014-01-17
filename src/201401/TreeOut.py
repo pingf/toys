@@ -36,7 +36,7 @@ class Node3(Node):
 
 
 class TreeOut(object):
-    def __init__(self, root):
+    def __init__(self, root=None):
         self.root = root#Node2('Hello', Node2('world1', Node('1'), Node('2')), Node2('world2', Node('1'), Node('2')))
 
     def visit(self):
@@ -92,10 +92,23 @@ class TreeOut(object):
             TreeOut.edges(v, edges)
         return edges
 
+    def graph(self):
+        e = []
+        self.edges(self.root.visit(), e)
+        g = "digraph test{\n"
+        for i, v in enumerate(e):
+            g += v[0] + '->' + v[1] + ';\n'
+        g += '}'
+        return g
+    def call_graphviz(self):
+        import pexpect
+        fp = open("test.dot",'w')
+        fp.write(self.graph())
+        fp.close()
+        child = pexpect.run('dot -Tpng test.dot -o test.png')
+
 
 if __name__ == '__main__':
-    m = []
-    t = TreeOut.edges('Hello[world1[1,2],world2[3,4]]', m)
-    print m
-    print m == t
+    tree = TreeOut(Node2('Hello', Node2('world1', Node('1'), Node('2')), Node2('world2', Node('3'), Node('4'))))
+    tree.call_graphviz()
 
