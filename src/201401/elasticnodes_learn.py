@@ -15,9 +15,9 @@ class Edge(QGraphicsItem):
     def __init__(self, sourceNode, destNode):
         super(Edge, self).__init__()
 
-        self.arrowSize = 10.0
-        self.sourcePoint = QtCore.QPointF()
-        self.destPoint = QtCore.QPointF()
+        self.arrowSize = 5.0
+        self.sourcePoint = QPointF()
+        self.destPoint = QPointF()
 
         self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         self.source = sourceNode
@@ -119,7 +119,7 @@ class Edge(QGraphicsItem):
 
         painter.setBrush(QtCore.Qt.black)
         #painter.drawPolygon(QtGui.QPolygonF([line.p1(), sourceArrowP1, sourceArrowP2]))
-        #painter.drawPolygon(QtGui.QPolygonF([line.p2(), destArrowP1, destArrowP2]))
+        painter.drawPolygon(QtGui.QPolygonF([line.p2(), destArrowP1, destArrowP2]))
 
 
 class Node(QtGui.QGraphicsItem):
@@ -163,10 +163,10 @@ class Node(QtGui.QGraphicsItem):
                                  QtCore.QPointF(0, 0))
             dx = line.dx()
             dy = line.dy()
-            l = 20.0 * (dx * dx + dy * dy)
+            l = 2.0 * (dx * dx + dy * dy)
             if l > 0:
-                xvel += (dx * 1050.0) / l
-                yvel += (dy * 1050.0) / l
+                xvel += (dx * 50.0) / l
+                yvel += (dy * 50.0) / l
 
         # Now subtract all forces pulling items together.
         weight = (len(self.edgeList) + 1) * 10.0
@@ -309,8 +309,9 @@ class GraphWidget(QtGui.QGraphicsView):
         self.setWindowTitle("Elastic Nodes")
 
     def itemMoved(self):
+
         if not self.timerId:
-            self.timerId = self.startTimer(1000 / 25)
+            self.timerId = self.startTimer(1000 / 20)
 
     def keyPressEvent(self, event):
         key = event.key()
