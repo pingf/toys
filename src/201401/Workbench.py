@@ -2,6 +2,54 @@
 __author__ = 'jesse'
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from PyQt4.Qsci import *
+
+
+class CodeEditor(QsciScintilla):
+    def __init__(self, path=None):
+        super(CodeEditor, self).__init__()
+        self.setUtf8(True) # use utf8
+        self.current_file = None
+        # self.open()
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        modifier = event.modifiers()
+        if key == Qt.Key_S and modifier & Qt.ControlModifier:
+            self.save()
+        return super(CodeEditor, self).keyPressEvent(event)
+
+    def open(self, filepath):
+        if not filepath:
+            self.setText("")
+            return 0
+        in_file = QFile(filepath)
+        if in_file.open(QFile.ReadOnly | QFile.Text):
+            text = in_file.readAll()
+            try:
+                text = str(text, encoding='utf-8')
+            except TypeError:
+                text = str(text)
+            self.setText(text)
+            in_file.close()
+            self.current_file = filepath
+            return True
+        return False
+
+    def save(self):
+        print 'save'
+        out_file = QFile(self.current_file)
+        if out_file.open(QFile.WriteOnly | QFile.Text):
+            out_file.writeData(self.text())
+            out_file.close()
+            return True
+        return False
+
+    def save_as(self, filename):
+        pass
+
+    def current_file_path(self):
+        return self.current_file
 
 
 class ProjectModel(QFileSystemModel):
@@ -57,194 +105,85 @@ class Workbench(QMainWindow):
         tree.hideColumn(2) # for removing Type Column
         tree.hideColumn(3) # for removing Date Modified Column
         tree.setColumnWidth(0, 200)
-        tree.setColumnWidth(1, 40)
+        tree.setColumnWidth(1, 20)
         tree.doubleClicked.connect(self.test_pass)
         tree.pressed.connect(self.test_pass)
-        tree.setStyleSheet(
-            """
-             QHeaderView::section {
-     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                       stop:0 #616161, stop: 0.5 #505050,
-                                       stop: 0.6 #434343, stop:1 #656565);
-     color: white;
-     padding-left: 4px;
-     border: 1px solid #6c6c6c;
- }
-
- QHeaderView::section:checked
- {
-     background-color: red;
- }
-
- /* style the sort indicator */
- QHeaderView::down-arrow {
-     image: url(down_arrow.png);
- }
-
- QHeaderView::up-arrow {
-     image: url(up_arrow.png);
- }
-    QMainWindow::separator  {
-        background: yellow;
-        width: 10px; /* when vertical */
-        height: 0px; /* when horizontal */
-    }
-
-    QMainWindow::separator:hover  {
-        background: red;
-    }
- QFrame, QLabel, QToolTip {
-     border: 2px solid green;
-     border-radius: 4px;
-     padding: 2px;
-     background-image: url(images/welcome.png);
- }
-
-  QGroupBox {
-     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                       stop: 0 #E0E0E0, stop: 1 #FFFFFF);
-     border: 2px solid gray;
-     border-radius: 5px;
-     margin-top: 1ex; /* leave space at the top for the title */
- }
-
- QGroupBox::title {
-     subcontrol-origin: margin;
-     subcontrol-position: top center; /* position at the top center */
-     padding: 0 3px;
-     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                       stop: 0 #FFOECE, stop: 1 #FFFFFF);
- }
-            """)
 
         dock.setWidget(tree)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
         #self.viewMenu.addAction(dock.toggleViewAction())
         self.file_monitor = dock
 
-        dock = QDockWidget("Paragraphs", self)
+        dock = QDockWidget("test", self)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        self.paragraphsList = QListWidget(dock)
-        self.paragraphsList.addItems((
-            "Thank you for your payment which we have received today.",
-            "Your order has been dispatched and should be with you within "
-            "28 days.",
-            "We have dispatched those items that were in stock. The rest of "
-            "your order will be dispatched once all the remaining items "
-            "have arrived at our warehouse. No additional shipping "
-            "charges will be made.",
-            "You made a small overpayment (less than $5) which we will keep "
-            "on account for you, or return at your request.",
-            "You made a small underpayment (less than $1), but we have sent "
-            "your order anyway. We'll add this underpayment to your next "
-            "bill.",
-            "Unfortunately you did not send enough money. Please remit an "
-            "additional $. Your order will be dispatched as soon as the "
-            "complete amount has been received.",
-            "You made an overpayment (more than $5). Do you wish to buy more "
-            "items, or should we return the excess to you?"))
-        dock.setWidget(self.paragraphsList)
-        #self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        #self.viewMenu.addAction(dock.toggleViewAction())
+        button1 = QPushButton("click me1")
+        button2 = QPushButton("click me2")
+        button3 = QPushButton("click me3")
+        button1.clicked.connect(self.open)
+        vbox = QVBoxLayout()
+        vbox.addWidget(button1)
+        vbox.addWidget(button2)
+        vbox.addWidget(button3)
+        widget = QWidget()
+        widget.setMaximumWidth(200)
+        widget.setLayout(vbox)
+        dock.setWidget(widget)
+        self.buttons = dock
 
-        # self.customerList.currentTextChanged.connect(self.insertCustomer)
-        # self.paragraphsList.currentTextChanged.connect(self.addParagraph)
-        #self.setCentralWidget(dock)
-        self.tabifyDockWidget(self.file_monitor, dock)
-        b = QPushButton()
-        b.setStyleSheet("""
-        background-color:red;
-        color:blue;
-        """)
-        dock.setTitleBarWidget(b)
-        dock.setStyleSheet(
-            """
-             QFrame, QLabel, QToolTip {
-border: 2px solid green;
-border-radius: 4px;
-padding: 2px;
-background-image: url(images/welcome.png);
-}
-             height = 0;
-    QMainWindow::separator  {
-background: yellow;
-width: 0px; /* when vertical */
-height: 10px; /* when horizontal */
-}
+        dock = QDockWidget("test", self)
+        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dock.setWidget(QTextEdit())
 
-QMainWindow::separator:hover  {
-background: red;
-}
-QGroupBox {
-background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
-border: 2px solid gray;
-border-radius: 5px;
-margin-top: 1ex; /* leave space at the top for the title */
-}
+        self.addDockWidget(Qt.DockWidgetArea(2), dock)
+        self.tabifyDockWidget(self.file_monitor, self.buttons)
 
-QGroupBox::title {
-subcontrol-origin: margin;
-subcontrol-position: top center; /* position at the top center */
-padding: 0 3px;
-background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                           stop: 0 #FFOECE, stop: 1 #FFFFFF);
-}
-
-            """)
-
-        self.setStyleSheet(
-            """
-             QFrame, QLabel, QToolTip {
-     border: 2px solid green;
-     border-radius: 4px;
-     padding: 2px;
-     background-image: url(images/welcome.png);
- }
-            QMainWindow::separator { background-color: red; width: 5px; height: px; }
- QGroupBox {
-     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                       stop: 0 #E0E0E0, stop: 1 #FFFFFF);
-     border: 2px solid gray;
-     border-radius: 5px;
-     margin-top: 1ex; /* leave space at the top for the title */
- }
-
- QGroupBox::title {
-     subcontrol-origin: margin;
-     subcontrol-position: top center; /* position at the top center */
-     padding: 0 3px;
-     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                       stop: 0 #FFOECE, stop: 1 #FFFFFF);
- }
-
-
-QTabBar
-{
-height:0px;
-foreground-color:black;
-background-color:yellow;
-color:blue;
-}
-QTabBar::tab  {
-    background: black;
-    border: 2px solid #C4C4C3;
-    border-bottom-color: #C2C7CB; /* same as the pane color */
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    min-width: 8ex;
-    padding: 2px;
-}
-            """)
+    def setup_central(self):
+        self.editors = QMdiArea(self)
+        self.editors.setViewMode(QMdiArea.TabbedView)
+        self.editors.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.editors.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setCentralWidget(self.editors)
 
     def setup_ui(self):
         self.setup_menus()
         self.setup_docks()
-        self.setCentralWidget(QTextEdit(self))
+        self.setup_central()
+        self.statusBar().show()
         #self.setCentralWidget(self.file_monitor)
-        t = self.tabifiedDockWidgets(self.file_monitor)
-        print t
+
+    def createMdiChild(self):
+        child = CodeEditor()
+        self.editors.addSubWindow(child)
+
+        # child.copyAvailable.connect(self.cutAct.setEnabled)
+        # child.copyAvailable.connect(self.copyAct.setEnabled)
+
+        return child
+
+    def findMdiChild(self, fileName):
+        canonicalFilePath = QFileInfo(fileName).canonicalFilePath()
+
+        for window in self.editors.subWindowList():
+            if window.widget().current_file_path() == canonicalFilePath:
+                return window
+        return None
+
+    def open(self):
+        fileName = QFileDialog.getOpenFileName(self)
+        if fileName:
+            existing = self.findMdiChild(fileName)
+            if existing:
+                self.editors.setActiveSubWindow(existing)
+                return
+
+            child = self.createMdiChild()
+            if child.open(fileName):
+                self.statusBar().showMessage("File loaded", 2000)
+                child.show()
+            else:
+                child.close()
 
 
 if __name__ == '__main__':
