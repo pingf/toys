@@ -3,6 +3,7 @@ __author__ = 'jesse'
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from PyQt4.Qsci import *
+import os
 
 
 class CodeEditor(QsciScintilla):
@@ -11,11 +12,12 @@ class CodeEditor(QsciScintilla):
         self.setUtf8(True) # use utf8
         self.current_file = None
         # self.open()
-
+    def set_current_file(self,filename):
+        self.current_file = filename
     def keyPressEvent(self, event):
         key = event.key()
         modifier = event.modifiers()
-        if key == Qt.Key_S and modifier & Qt.ControlModifier:
+        if (key == Qt.Key_S) and (modifier & Qt.ControlModifier):
             self.save()
         return super(CodeEditor, self).keyPressEvent(event)
 
@@ -37,24 +39,26 @@ class CodeEditor(QsciScintilla):
         return False
 
     def save(self):
-        print 'save'
-        out_file = QFile(self.current_file)
+        self.save_as(self.current_file)
+
+
+    def save_as(self, filename):
+        assert filename != None
+        out_file = QFile(filename)
         if out_file.open(QFile.WriteOnly | QFile.Text):
             out_file.writeData(self.text())
             out_file.close()
+            self.current_file = filename
             return True
         return False
 
-    def save_as(self, filename):
-        pass
-
-    def current_file_path(self):
+    def current_filepath(self):
         return self.current_file
 
 
-class ProjectModel(QFileSystemModel):
+class FileModel(QFileSystemModel):
     def columnCount(self, parent=QModelIndex()):
-        return super(ProjectModel, self).columnCount() + 1
+        return super(FileModel, self).columnCount() + 1
 
     def data(self, index, role):
         if index.column() == self.columnCount() - 1:
@@ -63,8 +67,75 @@ class ProjectModel(QFileSystemModel):
             if role == Qt.TextAlignmentRole:
                 return Qt.AlignLeft
 
-        return super(ProjectModel, self).data(index, role)
+        return super(FileModel, self).data(index, role)
 
+
+class FileTreeView(QTreeView):
+    def __init__(self, model, path, parent=None):
+        super(FileTreeView, self).__init__(parent)
+        model.setRootPath(path)
+        self.setModel(model)
+        self.setRootIndex(model.index(path))
+        self.setCurrentIndex(model.index(0, 0))
+        self.hideColumn(1) # for removing Size Column
+        self.hideColumn(2) # for removing Type Column
+        self.hideColumn(3) # for removing Date Modified Column
+        self.setColumnWidth(0, 200)
+        self.setColumnWidth(1, 20)
+
+        self.buddy = None
+        self.doubleClicked.connect(self.open_file)
+
+    def set_buddy(self, buddy):
+        self.buddy = buddy
+
+    def open_file(self, index):
+        path = self.model().filePath(index)
+        print path
+        return self.buddy.open_file(path)
+
+
+class MDIEditor(QMdiArea):
+    def __init__(self, parent=None):
+        super(MDIEditor, self).__init__(parent)
+        self.setViewMode(QMdiArea.TabbedView)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+    def create_code_child(self):
+        child = CodeEditor()
+        self.addSubWindow(child)
+        return child
+
+
+    def find_child(self, name):
+        canonical_filepath = QFileInfo(name).canonicalFilePath()
+        for window in self.subWindowList():
+            if window.widget().current_filepath() == canonical_filepath:
+                return window
+        return None
+
+    def open_file(self, filename):
+        if filename:
+            existing = self.find_child(filename)
+            if existing:
+                self.setActiveSubWindow(existing)
+                return
+            child_create_map = {"code": self.create_code_child}
+            child_type = "code"
+            child = child_create_map[child_type]()
+            if child.open(filename):
+                child.set_current_file(filename)
+                self.subWindowList()[-1].setWindowTitle(os.path.basename(str(filename)))
+                child.show()
+                return True
+            else:
+                child.close()
+        return False
+
+    def open(self):
+        filename = QFileDialog.getOpenFileName(self)
+        return self.open_file(filename)
 
 class Workbench(QMainWindow):
     def __init__(self):
@@ -83,8 +154,8 @@ class Workbench(QMainWindow):
         fileMenu.addAction("&New file", self.test_pass, "Ctrl+1")
         fileMenu.addAction("&Open directory...", self.test_pass, "Ctrl+O")
         fileMenu.addSeparator()
-        fileMenu.addAction("&Save", self.test_pass, QKeySequence.Save)
-        fileMenu.addAction("Save &As...", self.test_pass, QKeySequence.SaveAs)
+        #fileMenu.addAction("&Save", self.test_pass, QKeySequence.Save)
+        #fileMenu.addAction("Save &As...", self.test_pass, QKeySequence.SaveAs)
         fileMenu.addSeparator()
         fileMenu.addAction("&Close", self.test_pass, "Ctrl+W")
         fileMenu.addSeparator()
@@ -95,23 +166,12 @@ class Workbench(QMainWindow):
         dock = QDockWidget("File", self)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        file_model = ProjectModel()
-        file_model.setRootPath("./")
-        tree = QTreeView()
+        file_model = FileModel()
+        tree = FileTreeView(file_model,'./',self)
         tree.setModel(file_model)
-        tree.setRootIndex(file_model.index("./"))
-        tree.setCurrentIndex(file_model.index(0, 0))
-        tree.hideColumn(1) # for removing Size Column
-        tree.hideColumn(2) # for removing Type Column
-        tree.hideColumn(3) # for removing Date Modified Column
-        tree.setColumnWidth(0, 200)
-        tree.setColumnWidth(1, 20)
-        tree.doubleClicked.connect(self.test_pass)
-        tree.pressed.connect(self.test_pass)
 
         dock.setWidget(tree)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
-        #self.viewMenu.addAction(dock.toggleViewAction())
         self.file_monitor = dock
 
         dock = QDockWidget("test", self)
@@ -120,7 +180,7 @@ class Workbench(QMainWindow):
         button1 = QPushButton("click me1")
         button2 = QPushButton("click me2")
         button3 = QPushButton("click me3")
-        button1.clicked.connect(self.open)
+        self.button1,self.button2,self.button3=button1,button2,button3
         vbox = QVBoxLayout()
         vbox.addWidget(button1)
         vbox.addWidget(button2)
@@ -140,46 +200,32 @@ class Workbench(QMainWindow):
         self.tabifyDockWidget(self.file_monitor, self.buttons)
 
     def setup_central(self):
-        self.editors = QMdiArea(self)
-        self.editors.setViewMode(QMdiArea.TabbedView)
-        self.editors.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.editors.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.editors = MDIEditor(self)
+
         self.setCentralWidget(self.editors)
 
     def setup_ui(self):
         self.setup_menus()
         self.setup_docks()
         self.setup_central()
+
+        self.file_monitor.widget().set_buddy(self.editors)
+        self.button1.clicked.connect(self.editors.open)
         self.statusBar().show()
-        #self.setCentralWidget(self.file_monitor)
-
-    def createMdiChild(self):
-        child = CodeEditor()
-        self.editors.addSubWindow(child)
-
-        # child.copyAvailable.connect(self.cutAct.setEnabled)
-        # child.copyAvailable.connect(self.copyAct.setEnabled)
-
-        return child
-
-    def findMdiChild(self, fileName):
-        canonicalFilePath = QFileInfo(fileName).canonicalFilePath()
-
-        for window in self.editors.subWindowList():
-            if window.widget().current_file_path() == canonicalFilePath:
-                return window
-        return None
 
     def open(self):
-        fileName = QFileDialog.getOpenFileName(self)
-        if fileName:
-            existing = self.findMdiChild(fileName)
+        filename = QFileDialog.getOpenFileName(self)
+        return self.open_file(filename)
+
+    def open_file(self, filename):
+        if filename:
+            existing = self.editors.find_child(filename)
             if existing:
                 self.editors.setActiveSubWindow(existing)
                 return
 
-            child = self.createMdiChild()
-            if child.open(fileName):
+            child = self.editors.create_child("code")
+            if child.open(filename):
                 self.statusBar().showMessage("File loaded", 2000)
                 child.show()
             else:
