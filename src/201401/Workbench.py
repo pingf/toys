@@ -7,25 +7,29 @@ import os
 
 
 class CodeEditor(QsciScintilla):
-    def __init__(self, path=None):
+    def __init__(self, name='untitled'):
         super(CodeEditor, self).__init__()
         self.setUtf8(True) # use utf8
-        self.current_file = None
-        # self.open()
-    def set_current_file(self,filename):
-        self.current_file = filename
+        self.filename = name
+
+    def set_current_file(self, filename):
+        self.filename = filename
+
+    def current_filepath(self):
+        return self.filename
+
     def keyPressEvent(self, event):
         key = event.key()
         modifier = event.modifiers()
-        if (key == Qt.Key_S) and (modifier & Qt.ControlModifier):
+        if key == Qt.Key_S and modifier & Qt.ControlModifier:
             self.save()
         return super(CodeEditor, self).keyPressEvent(event)
 
-    def open(self, filepath):
-        if not filepath:
+    def open(self, filename):
+        if not filename:
             self.setText("")
             return 0
-        in_file = QFile(filepath)
+        in_file = QFile(filename)
         if in_file.open(QFile.ReadOnly | QFile.Text):
             text = in_file.readAll()
             try:
@@ -34,26 +38,22 @@ class CodeEditor(QsciScintilla):
                 text = str(text)
             self.setText(text)
             in_file.close()
-            self.current_file = filepath
+            self.filename = filename
             return True
         return False
 
     def save(self):
-        self.save_as(self.current_file)
+        self.save_as(self.current_filepath)
 
-
-    def save_as(self, filename):
-        assert filename != None
-        out_file = QFile(filename)
-        if out_file.open(QFile.WriteOnly | QFile.Text):
-            out_file.writeData(self.text())
-            out_file.close()
-            self.current_file = filename
-            return True
+    def save_as(self, filename=None):
+        if filename is not None:
+            out_file = QFile(filename)
+            if out_file.open(QFile.WriteOnly | QFile.Text):
+                out_file.writeData(self.text())
+                out_file.close()
+                self.current_filepath = filename
+                return True
         return False
-
-    def current_filepath(self):
-        return self.current_file
 
 
 class FileModel(QFileSystemModel):
@@ -66,7 +66,6 @@ class FileModel(QFileSystemModel):
                 return QString("")
             if role == Qt.TextAlignmentRole:
                 return Qt.AlignLeft
-
         return super(FileModel, self).data(index, role)
 
 
@@ -83,16 +82,8 @@ class FileTreeView(QTreeView):
         self.setColumnWidth(0, 200)
         self.setColumnWidth(1, 20)
 
-        self.buddy = None
-        self.doubleClicked.connect(self.open_file)
-
     def set_buddy(self, buddy):
         self.buddy = buddy
-
-    def open_file(self, index):
-        path = self.model().filePath(index)
-        print path
-        return self.buddy.open_file(path)
 
 
 class MDIEditor(QMdiArea):
@@ -102,46 +93,54 @@ class MDIEditor(QMdiArea):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-    def create_code_child(self):
+    def create_code_child(self, filename):
         child = CodeEditor()
-        self.addSubWindow(child)
+        subwin = self.addSubWindow(child)
+        print subwin, filename
+        subwin.setWindowTitle(os.path.basename(str(filename)))
         return child
-
 
     def find_child(self, name):
         canonical_filepath = QFileInfo(name).canonicalFilePath()
         for window in self.subWindowList():
+            print window.widget()
             if window.widget().current_filepath() == canonical_filepath:
                 return window
         return None
 
-    def open_file(self, filename):
-        if filename:
-            existing = self.find_child(filename)
-            if existing:
-                self.setActiveSubWindow(existing)
-                return
-            child_create_map = {"code": self.create_code_child}
-            child_type = "code"
-            child = child_create_map[child_type]()
-            if child.open(filename):
-                child.set_current_file(filename)
-                self.subWindowList()[-1].setWindowTitle(os.path.basename(str(filename)))
-                child.show()
-                return True
-            else:
-                child.close()
-        return False
 
-    def open(self):
-        filename = QFileDialog.getOpenFileName(self)
-        return self.open_file(filename)
+class Dock(QDockWidget):
+    def __init__(self, name='dock', parent=None):
+        super(QDockWidget, self).__init__(name, parent)
+        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+
+
+class TestToolBox(QWidget):
+    def __init__(self, parent=None):
+        super(TestToolBox, self).__init__(parent)
+        self.buttons = [QPushButton("button 0"),
+                        QPushButton("button 1"),
+                        QPushButton("button 2"),
+                        QPushButton("button 3"),
+                        QPushButton("button 4"),
+                        QPushButton("button 5"),
+                        QPushButton("button 6"),
+                        QPushButton("button 7")]
+
+        vbox = QVBoxLayout()
+        for i in range(8):
+            vbox.addWidget(self.buttons[i])
+        self.setMaximumWidth(200)
+        self.setLayout(vbox)
+
+    def button(self, num=0):
+        return self.buttons[0]
+
 
 class Workbench(QMainWindow):
     def __init__(self):
         super(Workbench, self).__init__()
-        self.navigators = None
-        self.editors = None
         self.setup_ui()
         # print self.__dict__.keys()
         # print [method for method in dir(self) if callable(getattr(self, method))]
@@ -163,59 +162,50 @@ class Workbench(QMainWindow):
         self.menuBar().addMenu(fileMenu)
 
     def setup_docks(self):
-        dock = QDockWidget("File", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        file_monitor_dock = Dock("File", self)
         file_model = FileModel()
-        tree = FileTreeView(file_model,'./',self)
-        tree.setModel(file_model)
+        tree = FileTreeView(file_model, './', file_monitor_dock)
+        file_monitor_dock.setWidget(tree)
+        self.addDockWidget(Qt.LeftDockWidgetArea, file_monitor_dock)
+        self.file_monitor = tree
 
-        dock.setWidget(tree)
-        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
-        self.file_monitor = dock
+        tool_box_dock = Dock("test", self)
+        widget = TestToolBox()
+        tool_box_dock.setWidget(widget)
+        self.addDockWidget(Qt.RightDockWidgetArea, tool_box_dock)
+        self.tool_box = widget
 
-        dock = QDockWidget("test", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        button1 = QPushButton("click me1")
-        button2 = QPushButton("click me2")
-        button3 = QPushButton("click me3")
-        self.button1,self.button2,self.button3=button1,button2,button3
-        vbox = QVBoxLayout()
-        vbox.addWidget(button1)
-        vbox.addWidget(button2)
-        vbox.addWidget(button3)
-        widget = QWidget()
-        widget.setMaximumWidth(200)
-        widget.setLayout(vbox)
-        dock.setWidget(widget)
-        self.buttons = dock
-
-        dock = QDockWidget("test", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dock.setWidget(QTextEdit())
-
-        self.addDockWidget(Qt.DockWidgetArea(2), dock)
-        self.tabifyDockWidget(self.file_monitor, self.buttons)
+        #self.addDockWidget(Qt.DockWidgetArea(2), dock)
+        #self.tabifyDockWidget(file_monitor_dock, tool_box_dock)
 
     def setup_central(self):
         self.editors = MDIEditor(self)
 
         self.setCentralWidget(self.editors)
 
+    def setup_signals(self):
+        self.tool_box.button(0).clicked.connect(self.open)
+        self.file_monitor.doubleClicked.connect(self.open_file_from_file_monitor)
+
+
     def setup_ui(self):
         self.setup_menus()
         self.setup_docks()
         self.setup_central()
 
-        self.file_monitor.widget().set_buddy(self.editors)
-        self.button1.clicked.connect(self.editors.open)
         self.statusBar().show()
+
+        self.setup_signals()
+
 
     def open(self):
         filename = QFileDialog.getOpenFileName(self)
         return self.open_file(filename)
+
+
+    def open_file_from_file_monitor(self, index):
+        path = self.file_monitor.model().filePath(index)
+        return self.open_file(path)
 
     def open_file(self, filename):
         if filename:
@@ -224,7 +214,7 @@ class Workbench(QMainWindow):
                 self.editors.setActiveSubWindow(existing)
                 return
 
-            child = self.editors.create_child("code")
+            child = self.editors.create_code_child(filename)
             if child.open(filename):
                 self.statusBar().showMessage("File loaded", 2000)
                 child.show()
