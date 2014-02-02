@@ -1,4 +1,7 @@
 .idea/*
+.settings/*
 *.iml
 *.ipr
 *.iws
+.project
+.pydevproject
