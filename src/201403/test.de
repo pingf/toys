@@ -1,0 +1,18 @@
+function tail(n,b1,b2,begin){ 
+    if (n == begin){ 
+        return b1 + b2;
+    } 
+    else { 
+        return tail(n, b2, b1 + b2, begin + 1);
+    }
+}
+function fib(x){
+    if (x>2){
+        return tail(x, 1, 1, 3); 
+    }else{
+        return 1;
+    }
+}
+function main(){
+    return fib(100);
+}
