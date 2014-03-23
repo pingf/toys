@@ -4,5 +4,6 @@
 *.ipr
 *.iws
 *.*~
+*.pyc
 .project
 .pydevproject
