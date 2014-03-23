@@ -21,8 +21,8 @@ class Test(unittest.TestCase):
     def test_overwrite_edit(self):
         self.editor.show()
         self.editor.setPlainText("abcd")
-        QTest.keyClicks(self.editor, "stu")
-        self.assertEqual(self.editor.toPlainText(), 'stuabcd')
+        QTest.keyClicks(self.editor, "1234")
+        self.assertEqual(self.editor.toPlainText(), '1234abcd')
 
 
 if __name__ == '__main__':
