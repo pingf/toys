@@ -39,8 +39,7 @@ class Post(Base):
 
 if __name__ == '__main__':
     engine=create_engine('mysql://root@localhost/blog',echo=False) 
-    Session = sessionmaker(bind=engine)
-    #Session.configure(bind=engine)
+    Session = sessionmaker(bind=engine) 
     session = Session()
     q=session.query(User)
     print q
