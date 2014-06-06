@@ -20,7 +20,7 @@ class User(Base):
         self.id=id
         self.name=name
     def __repr__(self):
-        return '<User %d,%r>' % (self.id,self.name)
+        return '<Post %d,%r>' % (self.id,self.name)
 
 class Post(Base):
     __tablename__ = 'post_alc'

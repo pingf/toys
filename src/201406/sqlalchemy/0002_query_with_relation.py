@@ -40,7 +40,7 @@ class Post(Base):
         self.content=content
         self.user_id=user_id
     def __repr__(self):
-        return '<User %d,%r,%r,%d>' % (self.id,self.title,self.content,self.user_id)
+        return '<Post %d,%r,%r,%d>' % (self.id,self.title,self.content,self.user_id)
 
 if __name__ == '__main__':
     engine=create_engine('mysql://root@localhost/blog',echo=True) 
