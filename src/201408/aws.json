@@ -1,0 +1,27 @@
+{
+		"stack_name":  "JESSE",
+        "checkout_paths": {
+                "app" : "/Users/fcmeng/repo/a",
+                "deploy" : "/Users/fcmeng/repo/b"
+        },
+        "aws_credentials": {
+                "a": {
+                        "aws_access_key_id":"xxxxxxx",
+                        "aws_secret_access_key":"yyyyyyy",
+                        "region":"us-east-1",
+                        "ssh_key": "/Users/fcmeng/.ssh/a_id_rsa"
+                },
+                "b": {
+                        "aws_access_key_id":"Your key here",
+                        "aws_secret_access_key":"Your key here",
+                        "region":"ap-southeast-2",
+                        "ssh_key": "/Users/*******/.ssh/b_id_rsa"
+                },
+                "c": {
+                        "aws_access_key_id":"Your key here",
+                        "aws_secret_access_key":"Your key here",
+                        "region":"ap-southeast-2",
+                        "ssh_key": "/Users/*******/.ssh/c_id_rsa"
+                }
+        }
+}
