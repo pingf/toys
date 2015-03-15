@@ -28,9 +28,27 @@ Slide 2
 
 ```python
 def main():
-	print('hello')
+		print('hello')
 ```
 
+```ruby
+require 'webrick'
+
+class Simple < WEBrick::HTTPServlet::AbstractServlet
+  def initialize server, color, size
+    super server
+    @color = color
+    @size = size
+  end
+
+  def service request, response
+    status, content_type, body = 200, 'text/plain', "color is #{@color} and size is #{@size}"
+
+    response.status = status
+    response['Content-Type'] = content_type
+    response.body = body
+  end
+```
 
 --
 
